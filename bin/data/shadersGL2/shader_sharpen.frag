@@ -48,7 +48,7 @@ void main()
     // we could do max(r(max(g,b)) as well, should work out similar
     
     
-    color_sharpen *= (sharpen_boost*1.)*brightness;
+    color_sharpen *= (sharpen_boost+1.)*brightness;
      
      gl_FragColor =color_sharpen;
 }
