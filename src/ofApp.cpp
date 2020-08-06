@@ -276,11 +276,10 @@ void ofApp::setup() {
     
     }else{
    
-        shader_mixer.load("shadersGL2/shader_mixer");
-        shader_blur.load("shadersGL2/shader_blur");
-        shader_sharpen.load("shadersGL2/shader_sharpen");
-        
-       
+        shader_mixer.load("shadersGL2/vertpass.vert", "shadersGL2/shader_mixer.frag");
+        shader_blur.load("shadersGL2/vertpass.vert", "shadersGL2/shader_blur.frag");
+        shader_sharpen.load("shadersGL2/vertpass.vert", "shadersGL2/shader_sharpen.frag");
+		      
     }
 #endif
     
@@ -514,9 +513,8 @@ void ofApp::draw() {
     
     
     shader_mixer.setUniform1f("width", ofGetWidth());
-    
     shader_mixer.setUniform1f("height", ofGetHeight());
-    
+	shader_mixer.setUniform2f("center", ofGetWidth()/2., ofGetHeight()/2.);
     shader_mixer.setUniform1f("cam1_scale", gui->cam1_scale);
     shader_mixer.setUniform1f("cam2_scale", gui->cam2_scale);
     
@@ -624,7 +622,6 @@ void ofApp::draw() {
     shader_mixer.setUniform3f("fb0_modswitch",fb_modswitch);
     
     
-   
     shader_mixer.setUniform3f("fb0_rescale",ofVec3f(gui->fb0_x_displace+lfo(gui->fb0_x_lfo_amp,fb0_theta_x,0)+c9*40.0f,
                                                     gui->fb0_y_displace+lfo(gui->fb0_y_lfo_amp,fb0_theta_y,0)+c10*40.0f,
                                                     gui->fb0_z_displace/100+lfo(gui->fb0_z_lfo_amp,fb0_theta_z,0))+c11);
@@ -1060,9 +1057,9 @@ void ofApp::draw() {
     //sharpen and blur the composited image before it is drawn to screens and buffers
     
     fbo_blur.begin();
-    shader_blur.begin();
-    fbo_draw.draw(0,0);
-    shader_blur.setUniform1f("blurAmnt",gui->blur_amount + c4*10);//+5*(midi_controls[25]+1)/2);
+	shader_blur.begin();
+	shader_blur.setUniform1f("blurAmnt", gui->blur_amount + c4 * 10);//+5*(midi_controls[25]+1)/2);
+	fbo_draw.draw(0,0);
     shader_blur.end();
     
     
@@ -1084,11 +1081,13 @@ void ofApp::draw() {
     //then figure out how to switch on and off and route properly
    
     shader_sharpen.begin();
-    fbo_blur.draw(0,0);
-    shader_sharpen.setUniform1f("sharpAmnt",gui->sharpen_amount+c5*.3);//+.3*(midi_controls[24]+1.0)/2.0);
-    shader_sharpen.setUniform1f("steppp",gui->sharpen_radius);
-    shader_sharpen.setUniform1f("sharpen_boost",gui->sharpen_boost+c5);
-    shader_sharpen.setUniform1f("chi",gui->sharpen_chi);
+	shader_sharpen.setUniform1f("sharpAmnt", gui->sharpen_amount + c5 * .3);//+.3*(midi_controls[24]+1.0)/2.0);
+	shader_sharpen.setUniform1f("sharpenStep", gui->sharpen_radius);
+	shader_sharpen.setUniform1f("sharpen_boost", gui->sharpen_boost + c5);
+	shader_sharpen.setUniform1f("chi", gui->sharpen_chi);
+
+	fbo_blur.draw(0,0);
+	
     shader_sharpen.end();
    
     
